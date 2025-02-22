@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.models import Venda, Produto
 from app import db
-from app.routes.estoque import saida_estoque
 from datetime import datetime
 
 vendas_bp = Blueprint('vendas', __name__)
