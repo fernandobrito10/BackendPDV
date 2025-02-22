@@ -38,7 +38,8 @@ class Venda(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     data = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     finalizadora = db.Column(db.Integer, db.ForeignKey('finalizadora.id'), nullable=False)
-    vendedor = db.Column(db.Integer, db.ForeignKey('funcionario.id'), nullable=False)
+    vendedor = db.Column(db.Integer, db.ForeignKey('funcionario.id'), nullable=True)
+    produto = db.relationship('Produto', backref='vendas')
 
 class MovimentacaoEstoque(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -17,7 +17,6 @@ def entrada_estoque():
     if not produto:
         return jsonify({'erro': 'Produto não encontrado'}), 404
 
-    # Atualiza o estoque
     produto.quantidade += quantidade
     db.session.commit()
 
