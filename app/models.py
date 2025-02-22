@@ -2,6 +2,10 @@ from app import db
 from datetime import datetime
 
 class Produto(db.Model):
+    __table_args__ = (
+        db.Index('idx_produto_descricao', 'descricao'),
+        db.Index('idx_produto_id', 'id'),
+    )
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable=False)
     descricao_reduzida = db.Column(db.Text, nullable=True)
@@ -33,6 +37,10 @@ class Cliente(db.Model):
     cpf = db.Column(db.String(11), nullable=True)
 
 class Venda(db.Model):
+    __table_args__ = (
+        db.Index('idx_venda_data', 'data'),
+        db.Index('idx_venda_cliente', 'cliente_id'),
+    )
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=True)
     finalizadora_id = db.Column(db.Integer, db.ForeignKey('finalizadora.id'), nullable=False)
@@ -46,6 +54,10 @@ class Venda(db.Model):
 
 
 class ItemVenda(db.Model):
+    __table_args__ = (
+        db.Index('idx_itemvenda_venda', 'venda_id'),
+        db.Index('idx_itemvenda_produto', 'produto_id'),
+    )
     id = db.Column(db.Integer, primary_key=True)
     venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=False)
     produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)

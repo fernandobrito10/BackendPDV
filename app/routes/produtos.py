@@ -6,17 +6,16 @@ produtos_bp = Blueprint('produtos', __name__)
 
 @produtos_bp.route('/produtos', methods=['GET'])
 def listar_produtos():
-    produtos = Produto.query.all()
+    produtos = Produto.query.with_entities(
+        Produto.id,
+        Produto.descricao,
+        Produto.preco
+    ).all()
+    
     return jsonify([{
         'id': p.id,
         'descricao': p.descricao,
-        'descricao_reduzida': p.descricao_reduzida,
         'preco': p.preco,
-        'unidade': p.unidade,
-        'quantidade': p.quantidade,
-        'codigo_ean': p.codigo_ean,
-        'fornecedor_id': p.fornecedor_id,
-        'fornecedor_nome': p.fornecedor_nome
     } for p in produtos])
 
 @produtos_bp.route('/produtos', methods=['POST'])

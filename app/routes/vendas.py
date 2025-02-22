@@ -10,16 +10,19 @@ def realizar_venda():
     data = request.get_json()
     total_venda = 0.0
 
-    cliente = Cliente.query.get(data.get('cliente_id'))
-    if not cliente:
-        return jsonify({'erro': 'Cliente não encontrado!'}), 404
+    # Verificar cliente apenas se um ID foi fornecido
+    cliente = None
+    if data.get('cliente_id'):
+        cliente = Cliente.query.get(data.get('cliente_id'))
+        if not cliente:
+            return jsonify({'erro': 'Cliente não encontrado!'}), 404
     
     finalizadora = Finalizadora.query.get(data.get('finalizadora_id'))
     if not finalizadora:
         return jsonify({'erro': 'Finalizadora não encontrada!'}), 404
 
     nova_venda = Venda(
-        cliente_id = cliente.id,
+        cliente_id = cliente.id if cliente else None,
         finalizadora_id = finalizadora.id,
         vendedor = data.get('vendedor'),
         data=datetime.utcnow(),
@@ -29,21 +32,17 @@ def realizar_venda():
     try:
         for item in data.get('itens', []):
             produto = Produto.query.get(item['produto_id'])
-            preco_unitario = produto.preco
-
             if not produto:
                 raise ValueError(f'Produto ID {item["produto_id"]} não encontrado!')
-            if produto.quantidade < item['quantidade']:
-                raise ValueError(f'Produto {produto.descricao} sem estoque suficiente!')
             
             novo_item = ItemVenda(
                 produto_id=produto.id,
-                preco_unitario=preco_unitario,
+                preco_unitario=produto.preco,
                 quantidade=item['quantidade']
             )
-            total_venda += preco_unitario * item['quantidade']
+            total_venda += produto.preco * item['quantidade']
             nova_venda.itens.append(novo_item)
-            produto.quantidade -= item['quantidade']
+            produto.quantidade -= item['quantidade']  # Ainda atualiza o estoque, mas permite negativo
 
         nova_venda.total = total_venda
         db.session.add(nova_venda)
@@ -67,7 +66,7 @@ def listar_vendas():
         venda_data = {
             'venda_id': venda.id,
             'total': venda.total,
-            'cliente': venda.cliente.nome,
+            'cliente': venda.cliente.nome if venda.cliente else "Venda Avulsa",
             'finalizadora': venda.finalizadora.descricao,
             'itens': [{
                 'produto': item.produto.descricao,
