@@ -7,7 +7,7 @@ class Produto(db.Model):
     descricao_reduzida = db.Column(db.Text, nullable=True)
     preco = db.Column(db.Float, nullable=False)
     unidade = db.Column(db.Text, nullable=False)
-    quantidade = db.Column(db.Integer, nullable=True)
+    quantidade = db.Column(db.Float, nullable=True)
     codigo_ean = db.Column(db.Integer, nullable=True)
     fornecedor_id = db.Column(db.Integer, db.ForeignKey('fornecedor.id'), nullable=True)
     fornecedor_nome = db.Column(db.String, db.ForeignKey('fornecedor.razao_social'), nullable=True)
@@ -34,15 +34,28 @@ class Cliente(db.Model):
 
 class Venda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
-    quantidade = db.Column(db.Integer, nullable=False)
-    data = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
-    finalizadora = db.Column(db.Integer, db.ForeignKey('finalizadora.id'), nullable=False)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=True)
+    finalizadora_id = db.Column(db.Integer, db.ForeignKey('finalizadora.id'), nullable=False)
     vendedor = db.Column(db.Integer, db.ForeignKey('funcionario.id'), nullable=True)
-    produto = db.relationship('Produto', backref='vendas')
+    data = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+    total = db.Column(db.Float, nullable=False, default=0.0)
+
+    cliente = db.relationship('Cliente', backref='vendas')
+    finalizadora = db.relationship('Finalizadora', backref='vendas')
+    itens = db.relationship('ItemVenda', backref='vendas', cascade='all, delete-orphan')
+
+
+class ItemVenda(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    venda_id = db.Column(db.Integer, db.ForeignKey('venda.id'), nullable=False)
+    produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
+    preco_unitario = db.Column(db.Float, nullable=False)
+    quantidade = db.Column(db.Float, nullable=False)
+
+    produto = db.relationship('Produto', backref='itens_venda')
 
 class MovimentacaoEstoque(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
-    quantidade = db.Column(db.Integer, nullable=False)
+    quantidade = db.Column(db.Float, nullable=False)
     data = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
